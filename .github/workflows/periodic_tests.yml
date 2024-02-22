@@ -63,7 +63,7 @@ jobs:
       - uses: actions/cache/save@v3
         id: save-cache
         with:
-          path: .numba_cache
+          path: ${{ github.workspace }}/.numba_cache
           key: numba-test-examples-3.10-${{ github.run_id }}
 
   test-nosoftdeps:
@@ -95,7 +95,7 @@ jobs:
       - uses: actions/cache/save@v3
         id: save-cache
         with:
-          path: .numba_cache
+          path: ${{ github.workspace }}/.numba_cache
           key: numba-test-no-softdeps-3.10-${{ github.run_id }}
 
   test-nosoftdeps-full:
@@ -124,7 +124,7 @@ jobs:
       - uses: actions/cache/save@v3
         id: save-cache
         with:
-          path: .numba_cache
+          path: ${{ github.workspace }}/.numba_cache
           key: numba-test-no-softdeps-full-3.10-${{ github.run_id }}
 
   pytest:
@@ -159,7 +159,7 @@ jobs:
       - uses: actions/cache/save@v3
         id: save-cache
         with:
-          path: .numba_cache
+          path: ${{ github.workspace }}/.numba_cache
           key: numba-pytest-${{ runner.os }}-${{ matrix.python-version}}-${{ github.run_id }}
 
   codecov:
