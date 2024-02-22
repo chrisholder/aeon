@@ -37,18 +37,29 @@ runs:
       run: echo "CICD_RUNNING=1" >> $GITHUB_ENV
       shell: bash
 
-    # GNU tar on windows runs much faster than the default BSD tar
+    # Get current date for cache restore
+    - name: Get Current Date
+      run: echo "CURRENT_DATE=$(date +'%d/%m/%Y')" >> $GITHUB_ENV
+      shell: bash
+
+    # Get previous date for cache restore in case other fails
+    - name: Get Previous Date
+      run: echo "PREVIOUS_DATE=$(date -d "yesterday" +'%d/%m/%Y')" >> $GITHUB_ENV
+      shell: bash
+
+        # GNU tar on windows runs much faster than the default BSD tar
     - name: "Use GNU tar instead BSD tar"
       if: ${{ inputs.runner_os == 'Windows' }}
       shell: cmd
       run: echo C:\Program Files\Git\usr\bin>>"%GITHUB_PATH%"
 
     # Restore cache if write_new_cache is false
-    - uses: actions/cache/restore@v3
+    # Try restore cache using todays date if not available try yesterdays date
+    - uses: actions/cache@v3
       id: restore-cache
       if: ${{ inputs.restore_cache == 'true' }}
       with:
         path: ${{ github.workspace }}/.numba_cache
-        key: numba-${{ inputs.cache_name }}-${{ inputs.python_version }}-${{ github.run_id }}
+        key: numba-${{ inputs.cache_name }}-${{ inputs.python_version }}-${{ env.CURRENT_DATE }}
         restore-keys: |
-          numba-${{ inputs.cache_name }}-${{ inputs.python_version }}-
+          numba-${{ inputs.cache_name }}-${{ inputs.python_version }}-${{ env.PREVIOUS_DATE }}

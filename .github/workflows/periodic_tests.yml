@@ -3,7 +3,7 @@ name: Periodic Tests
 on:
   schedule:
     # every day at 1:30 AM UTC
-    - cron:  "30 16 * * *"
+    - cron:  "18 17 * * *"
   workflow_dispatch:
 
 concurrency:
@@ -67,11 +67,15 @@ jobs:
         run: build_tools/run_examples.sh
         shell: bash
 
+      - name: Get Current Date
+        id: current-date
+        run: echo "CURRENT_DATE=$(date +'%d/%m/%Y')" >> $GITHUB_ENV
+
       - uses: actions/cache/save@v3
         id: save-cache
         with:
           path: ${{ github.workspace }}/.numba_cache
-          key: numba-test-examples-3.10-${{ github.run_id }}
+          key: numba-test-examples-3.10-${{ env.CURRENT_DATE }}
 
   test-nosoftdeps:
     runs-on: ubuntu-22.04
@@ -110,7 +114,7 @@ jobs:
         id: save-cache
         with:
           path: ${{ github.workspace }}/.numba_cache
-          key: numba-test-no-softdeps-3.10-${{ github.run_id }}
+          key: numba-test-no-softdeps-3.10-${{ env.CURRENT_DATE }}
 
   test-nosoftdeps-full:
     runs-on: ubuntu-22.04
@@ -146,7 +150,7 @@ jobs:
         id: save-cache
         with:
           path: ${{ github.workspace }}/.numba_cache
-          key: numba-test-no-softdeps-full-3.10-${{ github.run_id }}
+          key: numba-test-no-softdeps-full-3.10-${{ env.CURRENT_DATE }}
 
   pytest:
     runs-on: ${{ matrix.os }}
@@ -188,7 +192,7 @@ jobs:
         id: save-cache
         with:
           path: ${{ github.workspace }}/.numba_cache
-          key: numba-pytest-${{ runner.os }}-${{ matrix.python-version}}-${{ github.run_id }}
+          key: numba-pytest-${{ runner.os }}-${{ matrix.python-version}}-${{ env.CURRENT_DATE }}
 
   codecov:
     runs-on: ubuntu-22.04
