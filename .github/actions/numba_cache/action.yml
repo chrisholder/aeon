@@ -10,7 +10,10 @@ inputs:
   python_version:
     description: 'The python version'
     required: true
-
+  restore_cache:
+    description: 'Whether to restore the cache'
+    required: false
+    default: 'true'
 runs:
   using: 'composite'
   steps:
@@ -43,6 +46,7 @@ runs:
     # Restore cache if write_new_cache is false
     - uses: actions/cache/restore@v3
       id: restore-cache
+      if: ${{ inputs.restore_cache == 'true' }}
       with:
         path: ${{ github.workspace }}/.numba_cache
         key: numba-${{ inputs.cache_name }}-${{ inputs.python_version }}-${{ github.run_id }}
