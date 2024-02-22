@@ -3,7 +3,7 @@ name: Periodic Tests
 on:
   schedule:
     # every day at 1:30 AM UTC
-    - cron:  "05 14 * * *"
+    - cron:  "30 16 * * *"
   workflow_dispatch:
 
 concurrency:
