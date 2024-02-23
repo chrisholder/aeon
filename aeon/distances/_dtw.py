@@ -108,6 +108,7 @@ def dtw_distance(
     >>> dtw_distance(x, y) # 2D series with 3 channels, unequal length
     564.0
     """
+    temp = None
     if x.ndim == 1 and y.ndim == 1:
         _x = x.reshape((1, x.shape[0]))
         _y = y.reshape((1, y.shape[0]))
