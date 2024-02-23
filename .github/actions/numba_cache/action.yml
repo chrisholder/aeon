@@ -54,7 +54,7 @@ runs:
       run: echo C:\Program Files\Git\usr\bin>>"%GITHUB_PATH%"
 
     # Restore cache if write_new_cache is false
-    - uses: actions/cache@v3
+    - uses: actions/cache/restore@v3
       id: restore-cache
       if: ${{ inputs.restore_cache == 'true' }}
       with:
