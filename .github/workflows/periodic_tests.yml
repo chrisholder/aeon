@@ -3,7 +3,7 @@ name: Periodic Tests
 on:
   schedule:
     # every day at 1:30 AM UTC
-    - cron:  "30 17 * * *"
+    - cron:  "25 10 * * *"
   workflow_dispatch:
 
 concurrency:
@@ -75,6 +75,7 @@ jobs:
         id: save-cache
         with:
           path: ${{ github.workspace }}/.numba_cache
+          # Save cache with the current date (ENV set in numba_cache action)
           key: numba-test-examples-3.10-${{ env.CURRENT_DATE }}
 
   test-nosoftdeps:
@@ -114,6 +115,7 @@ jobs:
         id: save-cache
         with:
           path: ${{ github.workspace }}/.numba_cache
+          # Save cache with the current date (ENV set in numba_cache action)
           key: numba-test-no-softdeps-3.10-${{ env.CURRENT_DATE }}
 
   test-nosoftdeps-full:
@@ -150,6 +152,7 @@ jobs:
         id: save-cache
         with:
           path: ${{ github.workspace }}/.numba_cache
+          # Save cache with the current date (ENV set in numba_cache action)
           key: numba-test-no-softdeps-full-3.10-${{ env.CURRENT_DATE }}
 
   pytest:
@@ -192,6 +195,7 @@ jobs:
         id: save-cache
         with:
           path: ${{ github.workspace }}/.numba_cache
+          # Save cache with the current date (ENV set in numba_cache action)
           key: numba-pytest-${{ runner.os }}-${{ matrix.python-version}}-${{ env.CURRENT_DATE }}
 
   codecov:
