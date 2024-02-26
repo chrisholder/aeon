@@ -54,6 +54,12 @@ jobs:
       - name: Checkout main
         uses: actions/checkout@v4
 
+      - name: Set optimal environment variables
+        uses: ./.github/actions/optimal_ci_env
+        with:
+          runner_os: ${{ runner.os }}
+          python_version: ${{ matrix.python-version }}
+
       - name: Setup Python 3.10
         uses: actions/setup-python@v5
         with:
@@ -92,6 +98,12 @@ jobs:
     steps:
       - name: Checkout main
         uses: actions/checkout@v4
+
+      - name: Set optimal environment variables
+        uses: ./.github/actions/optimal_ci_env
+        with:
+          runner_os: ${{ runner.os }}
+          python_version: ${{ matrix.python-version }}
 
       - name: Setup Python 3.10
         uses: actions/setup-python@v5
@@ -136,6 +148,12 @@ jobs:
     steps:
       - name: Checkout main
         uses: actions/checkout@v4
+
+      - name: Set optimal environment variables
+        uses: ./.github/actions/optimal_ci_env
+        with:
+          runner_os: ${{ runner.os }}
+          python_version: ${{ matrix.python-version }}
 
       - name: Setup Python 3.10
         uses: actions/setup-python@v5
@@ -184,6 +202,12 @@ jobs:
       - name: Checkout main
         uses: actions/checkout@v4
 
+      - name: Set optimal environment variables
+        uses: ./.github/actions/optimal_ci_env
+        with:
+          runner_os: ${{ runner.os }}
+          python_version: ${{ matrix.python-version }}
+
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
@@ -224,6 +248,12 @@ jobs:
     steps:
       - name: Checkout main
         uses: actions/checkout@v4
+
+      - name: Set optimal environment variables
+        uses: ./.github/actions/optimal_ci_env
+        with:
+          runner_os: ${{ runner.os }}
+          python_version: ${{ matrix.python-version }}
 
       - name: Setup Python 3.10
         uses: actions/setup-python@v5
