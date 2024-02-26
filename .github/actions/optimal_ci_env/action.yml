@@ -1,0 +1,38 @@
+name: Set optimal env variables
+description: "Sets optimal env variables for CI run"
+
+inputs:
+  runner_os:
+    description: "The runner os"
+    required: true
+  python_version:
+    description: "The python version"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Update PATH
+      shell: bash
+      if: ${{ inputs.runner_os != 'Windows' }}
+      run: echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+    - name: Update Path for Windows
+      shell: bash
+      if: ${{ inputs.runner_os == 'Windows' }}
+      run: echo "$APPDATA\Python\Scripts" >> $GITHUB_PATH
+
+      # GNU tar on windows runs much faster than the default BSD tar
+    - name: Use GNU tar instead BSD tar if Windows
+      if: ${{ inputs.runner_os == 'Windows' }}
+      shell: cmd
+      run: echo C:\Program Files\Git\usr\bin>> $GITHUB_PATH
+
+    - name: Set Python cache directory on Windows
+      if: ${{ inputs.runner_os == 'Windows' }}
+      shell: pwsh
+      run: |
+        $Env:PIP_CACHE_DIR = "D:\pip\cache"
+        $Env:PYTHONUSERBASE = "D:\python\userbase"
+        echo "PIP_CACHE_DIR=$Env:PIP_CACHE_DIR" >> $GITHUB_ENV
+        echo "PYTHONUSERBASE=$Env:PYTHONUSERBASE" >> $GITHUB_ENV
