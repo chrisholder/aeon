@@ -28,7 +28,6 @@ jobs:
         uses: ./.github/actions/optimal_ci_env
         with:
           runner_os: ${{ runner.os }}
-          python_version: ${{ matrix.python-version }}
 
       - name: Setup Python 3.10
         uses: actions/setup-python@v5
@@ -71,7 +70,6 @@ jobs:
         uses: ./.github/actions/optimal_ci_env
         with:
           runner_os: ${{ runner.os }}
-          python_version: ${{ matrix.python-version }}
 
       - name: Setup Python 3.10
         uses: actions/setup-python@v5
@@ -117,7 +115,6 @@ jobs:
         uses: ./.github/actions/optimal_ci_env
         with:
           runner_os: ${{ runner.os }}
-          python_version: ${{ matrix.python-version }}
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -161,7 +158,6 @@ jobs:
         uses: ./.github/actions/optimal_ci_env
         with:
           runner_os: ${{ runner.os }}
-          python_version: ${{ matrix.python-version }}
 
       - name: Setup Python 3.10
         uses: actions/setup-python@v5

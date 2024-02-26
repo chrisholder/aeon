@@ -5,29 +5,19 @@ inputs:
   runner_os:
     description: "The runner os"
     required: true
-  python_version:
-    description: "The python version"
-    required: true
 
 runs:
   using: "composite"
   steps:
-    - name: Update PATH
-      shell: bash
-      if: ${{ inputs.runner_os != 'Windows' }}
-      run: echo "$HOME/.local/bin" >> $GITHUB_PATH
-
-    - name: Update Path for Windows
-      shell: bash
-      if: ${{ inputs.runner_os == 'Windows' }}
-      run: echo "$APPDATA\Python\Scripts" >> $GITHUB_PATH
-
       # GNU tar on windows runs much faster than the default BSD tar
     - name: Use GNU tar instead BSD tar if Windows
       if: ${{ inputs.runner_os == 'Windows' }}
       shell: cmd
       run: echo C:\Program Files\Git\usr\bin>> $GITHUB_PATH
 
+      # For some reason on windows I/O on the C drive is really slow. To get around this we set the
+      # python, and the cache directories to the D drive which doesn't have slow I/O.
+      # See: https://github.com/actions/runner-images/issues/8755 for more details
     - name: Set Python cache directory on Windows
       if: ${{ inputs.runner_os == 'Windows' }}
       shell: pwsh
@@ -35,6 +25,7 @@ runs:
     - name: Set Python environment for Windows
       if: ${{ inputs.runner_os == 'Windows' }}
       shell: pwsh
+      # See https://docs.python.org/3/using/cmdline.html for env variable details
       run: |
         $Env:PYTHONUSERBASE = "D:\python\userbase"
         $Env:PIP_CACHE_DIR = "D:\pip\cache"
