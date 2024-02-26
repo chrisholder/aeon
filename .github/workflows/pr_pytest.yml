@@ -1,4 +1,4 @@
-name: PR pytest
+name: PR pytest te
 
 on:
   push:
