@@ -3,6 +3,14 @@
 import numpy as np
 import pandas as pd
 
+from aeon.datatypes import convert_to
+from aeon.utils.validation import (
+    is_collection,
+    is_hierarchical,
+    is_single_series,
+    validate_input,
+)
+
 
 def _get_index(x):
     if hasattr(x, "index"):
@@ -211,10 +219,7 @@ def get_cutoff(
     Raises
     ------
     ValueError, TypeError, if check_input or convert_input are True
-        exceptions from check or conversion failure, in check_is_scitype, convert_to
     """
-    from aeon.datatypes import check_is_scitype, convert_to
-
     # deal with VectorizedDF
     if hasattr(obj, "X"):
         obj = obj.X
@@ -225,8 +230,7 @@ def get_cutoff(
         )
 
     if check_input:
-        valid = check_is_scitype(obj, scitype=["Series", "Panel", "Hierarchical"])
-        if not valid:
+        if not (is_hierarchical(obj) or is_collection(obj) or is_single_series(obj)):
             raise ValueError("obj must be of Series, Panel, or Hierarchical scitype")
 
     if convert_input:
@@ -413,21 +417,16 @@ def get_window(obj, window_length=None, lag=None):
         (cutoff - window_length - lag, cutoff - lag)
         None if obj was None
     """
-    from aeon.datatypes import check_is_scitype, convert_to
-
     if obj is None or (window_length is None and lag is None):
         return obj
-
-    valid, _, metadata = check_is_scitype(
-        obj, scitype=["Series", "Panel", "Hierarchical"], return_metadata=True
-    )
+    valid, metadata = validate_input(obj)
     if not valid:
-        raise ValueError("obj must be of Series, Panel, or Hierarchical scitype")
+        raise ValueError("obj must be of Series, Collection, or Hierarchical scitype")
     obj_in_mtype = metadata["mtype"]
 
     obj = convert_to(obj, GET_WINDOW_SUPPORTED_MTYPES)
 
-    # numpy3D (Panel) or np.npdarray (Series)
+    # numpy3D (Collection) or np.npdarray (Series)
     if isinstance(obj, np.ndarray):
         # if 2D or 3D, we need to subset by last, not first dimension
         # if 1D, we need to subset by first dimension
@@ -451,7 +450,8 @@ def get_window(obj, window_length=None, lag=None):
             obj_subset = obj_subset.swapaxes(1, -1)
         return obj_subset
 
-    # pd.DataFrame(Series), pd-multiindex (Panel) and pd_multiindex_hier (Hierarchical)
+    # pd.DataFrame(Series), pd-multiindex (Collection) and pd_multiindex_hier (
+    # Hierarchical)
     if isinstance(obj, pd.DataFrame):
         cutoff = get_cutoff(obj)
 
@@ -509,14 +509,10 @@ def get_slice(obj, start=None, end=None):
     obj sub-set sliced for `start` (inclusive) and `end` (exclusive) indices
         None if obj was None
     """
-    from aeon.datatypes import check_is_scitype, convert_to
-
     if (start is None and end is None) or obj is None:
         return obj
 
-    valid, _, metadata = check_is_scitype(
-        obj, scitype=["Series", "Panel", "Hierarchical"], return_metadata=True
-    )
+    valid, metadata = validate_input(obj)
     if not valid:
         raise ValueError("obj must be of Series, Panel, or Hierarchical scitype")
     obj_in_mtype = metadata["mtype"]

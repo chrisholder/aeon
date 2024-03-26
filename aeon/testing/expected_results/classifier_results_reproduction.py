@@ -1,7 +1,7 @@
 """Functions for generating stored unit test results for classifiers."""
 
 import numpy as np
-from sklearn.ensemble import IsolationForest, RandomForestClassifier
+from sklearn.ensemble import IsolationForest
 from sklearn.utils._testing import set_random_state
 
 from aeon.classification import BaseClassifier
@@ -23,7 +23,6 @@ from aeon.classification.early_classification import (
 from aeon.classification.feature_based import (
     Catch22Classifier,
     FreshPRINCEClassifier,
-    MatrixProfileClassifier,
     SignatureClassifier,
     SummaryClassifier,
 )
@@ -38,7 +37,6 @@ from aeon.classification.interval_based import (
 )
 from aeon.classification.shapelet_based import ShapeletTransformClassifier
 from aeon.datasets import load_basic_motions, load_unit_test
-from aeon.transformations.summarize import SummaryTransformer
 
 
 def _reproduce_classification_unit_test(estimator):
@@ -126,10 +124,6 @@ def _print_results_for_classifier(classifier_name, dataset_name):
         )
     elif classifier_name == "FreshPRINCEClassifier":
         classifier = FreshPRINCEClassifier.create_test_instance(
-            parameter_set="results_comparison"
-        )
-    elif classifier_name == "MatrixProfileClassifier":
-        classifier = MatrixProfileClassifier.create_test_instance(
             parameter_set="results_comparison"
         )
     elif classifier_name == "RandomIntervalClassifier":
