@@ -3,7 +3,7 @@ name: Periodically create new pip caches
 on:
   schedule:
     # every day at 1:30 AM UTC
-    - cron:  "45 20 * * *"
+    - cron:  "50 20 * * *"
   workflow_dispatch:
 
 concurrency:
@@ -25,7 +25,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set optimal environment variables for pip cache
-        uses: ./.github/actions/optimal_ci_env
+        uses: ./.github/actions/pip_cache
         with:
           runner_os: ${{ runner.os }}
           python_version: ${{ matrix.python-version }}
@@ -43,6 +43,7 @@ jobs:
           path: ${{ env.PIP_CACHE_DIR }}
           key: ${{ runner.os }}-${{ matrix.python-version }}-pip-${{ hashfiles('**/pyproject.toml') }}
 
+      # Only install dev dependencies since these are shared between all tests
       - name: Install aeon and dependencies
         uses: nick-fields/retry@v3
         if: steps.cache.outputs.cache-hit != 'true'
