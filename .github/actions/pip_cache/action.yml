@@ -28,7 +28,7 @@ runs:
       # See: https://github.com/actions/runner-images/issues/8755 for more details
     - name: Set Python environment for Windows
       if: ${{ inputs.runner_os == 'Windows' }}
-      shell: pwsh
+      shell: bash
       # See https://docs.python.org/3/using/cmdline.html for env variable details
       run: |
         $Env:PYTHONUSERBASE = "D:\python\userbase"
