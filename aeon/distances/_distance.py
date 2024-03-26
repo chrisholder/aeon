@@ -49,6 +49,7 @@ from aeon.distances._msm import (
     msm_distance,
     msm_pairwise_distance,
 )
+from aeon.distances._sbd import sbd_distance, sbd_pairwise_distance
 from aeon.distances._shape_dtw import (
     shape_dtw_alignment_path,
     shape_dtw_cost_matrix,
@@ -137,7 +138,7 @@ def distance(
     elif metric == "manhattan":
         return manhattan_distance(x, y)
     elif metric == "minkowski":
-        return minkowski_distance(x, y)
+        return minkowski_distance(x, y, kwargs.get("p", 2.0), kwargs.get("w", None))
     elif metric == "dtw":
         return dtw_distance(x, y, kwargs.get("window"), kwargs.get("itakura_max_slope"))
     elif metric == "ddtw":
@@ -222,6 +223,8 @@ def distance(
             kwargs.get("itakura_max_slope"),
             kwargs.get("warp_penalty", 1.0),
         )
+    elif metric == "sbd":
+        return sbd_distance(x, y, kwargs.get("standardize", True))
     else:
         if isinstance(metric, Callable):
             return metric(x, y, **kwargs)
@@ -239,11 +242,11 @@ def pairwise_distance(
     Parameters
     ----------
     X : np.ndarray
-        A collection of time series instances  of shape ``(n_instances, n_timepoints)``
-         or ``(n_instances, n_channels, n_timepoints)``.
+        A collection of time series instances  of shape ``(n_cases, n_timepoints)``
+         or ``(n_cases, n_channels, n_timepoints)``.
     y : np.ndarray or None, default=None
        A single series or a collection of time series of shape ``(m_timepoints,)`` or
-       ``(m_instances, m_timepoints)`` or ``(m_instances, m_channels, m_timepoints)``
+       ``(m_cases, m_timepoints)`` or ``(m_cases, m_channels, m_timepoints)``
     metric : str or Callable
         The distance metric to use.
         A list of valid distance metrics can be found in the documentation for
@@ -255,7 +258,7 @@ def pairwise_distance(
 
     Returns
     -------
-    np.ndarray (n_instances, n_instances)
+    np.ndarray (n_cases, n_cases)
         pairwise matrix between the instances of X.
 
     Raises
@@ -298,7 +301,9 @@ def pairwise_distance(
     elif metric == "manhattan":
         return manhattan_pairwise_distance(x, y)
     elif metric == "minkowski":
-        return minkowski_pairwise_distance(x, y)
+        return minkowski_pairwise_distance(
+            x, y, kwargs.get("p", 2.0), kwargs.get("w", None)
+        )
     elif metric == "dtw":
         return dtw_pairwise_distance(
             x, y, kwargs.get("window"), kwargs.get("itakura_max_slope")
@@ -385,6 +390,8 @@ def pairwise_distance(
             kwargs.get("itakura_max_slope"),
             kwargs.get("warp_penalty", 1.0),
         )
+    elif metric == "sbd":
+        return sbd_pairwise_distance(x, y, kwargs.get("standardize", True))
     else:
         if isinstance(metric, Callable):
             return _custom_func_pairwise(x, y, metric, **kwargs)
@@ -412,11 +419,11 @@ def _custom_func_pairwise(
 def _custom_pairwise_distance(
     X: np.ndarray, dist_func: DistanceFunction, **kwargs
 ) -> np.ndarray:
-    n_instances = X.shape[0]
-    distances = np.zeros((n_instances, n_instances))
+    n_cases = X.shape[0]
+    distances = np.zeros((n_cases, n_cases))
 
-    for i in range(n_instances):
-        for j in range(i + 1, n_instances):
+    for i in range(n_cases):
+        for j in range(i + 1, n_cases):
             distances[i, j] = dist_func(X[i], X[j], **kwargs)
             distances[j, i] = distances[i, j]
 
@@ -426,12 +433,12 @@ def _custom_pairwise_distance(
 def _custom_from_multiple_to_multiple_distance(
     x: np.ndarray, y: np.ndarray, dist_func: DistanceFunction, **kwargs
 ) -> np.ndarray:
-    n_instances = x.shape[0]
-    m_instances = y.shape[0]
-    distances = np.zeros((n_instances, m_instances))
+    n_cases = x.shape[0]
+    m_cases = y.shape[0]
+    distances = np.zeros((n_cases, m_cases))
 
-    for i in range(n_instances):
-        for j in range(m_instances):
+    for i in range(n_cases):
+        for j in range(m_cases):
             distances[i, j] = dist_func(x[i], y[j], **kwargs)
     return distances
 
@@ -758,6 +765,7 @@ def get_distance_function(metric: Union[str, DistanceFunction]) -> DistanceFunct
     'squared'       distances.squared_distance
     'manhattan'     distances.manhattan_distance
     'minkowski'     distances.minkowski_distance
+    'sbd'           distances.sbd_distance
     =============== ========================================
 
     Parameters
@@ -814,6 +822,7 @@ def get_pairwise_distance_function(
     'squared'       distances.squared_pairwise_distance
     'manhattan'     distances.manhattan_pairwise_distance
     'minkowski'     distances.minkowski_pairwise_distance
+    'sbd'           distances.sbd_pairwise_distance
     =============== ========================================
 
     Parameters
@@ -1061,6 +1070,11 @@ DISTANCES = [
         "pairwise_distance": shape_dtw_pairwise_distance,
         "cost_matrix": shape_dtw_cost_matrix,
         "alignment_path": shape_dtw_alignment_path,
+    },
+    {
+        "name": "sbd",
+        "distance": sbd_distance,
+        "pairwise_distance": sbd_pairwise_distance,
     },
 ]
 

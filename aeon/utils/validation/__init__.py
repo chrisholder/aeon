@@ -19,6 +19,12 @@ __all__ = [
     "is_pred_interval_proba",
     "is_pred_quantiles_proba",
     "is_pdmultiindex_hierarchical",
+    "is_single_series",
+    "is_collection",
+    "is_tabular",
+    "is_hierarchical",
+    "is_valid_input",
+    "validate_input",
 ]
 
 import os
@@ -28,18 +34,23 @@ from typing import Union
 import numpy as np
 import pandas as pd
 
+from aeon.utils.validation._input import is_valid_input, validate_input
 from aeon.utils.validation.collection import (
     get_n_cases,
     get_type,
     has_missing,
+    is_collection,
     is_equal_length,
     is_nested_univ_dataframe,
+    is_tabular,
     is_univariate,
 )
 from aeon.utils.validation.series import (
+    is_hierarchical,
     is_pdmultiindex_hierarchical,
     is_pred_interval_proba,
     is_pred_quantiles_proba,
+    is_single_series,
     is_univariate_series,
 )
 
@@ -52,6 +63,12 @@ ACCEPTED_WINDOW_LENGTH_TYPES = Union[
 NON_FLOAT_WINDOW_LENGTH_TYPES = Union[
     int, Union[ACCEPTED_TIMEDELTA_TYPES], Union[ACCEPTED_DATEOFFSET_TYPES]
 ]
+
+
+def is_valid_type(y) -> bool:
+    if is_hierarchical(y) or is_collection(y) or is_single_series(y):
+        return True
+    return False
 
 
 def is_array(x) -> bool:

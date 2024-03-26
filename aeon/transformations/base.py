@@ -50,7 +50,7 @@ import numpy as np
 import pandas as pd
 
 from aeon.base import BaseEstimator
-from aeon.datatypes import VectorizedDF, check_is_scitype, convert_to, mtype_to_scitype
+from aeon.datatypes import VectorizedDF, convert_to, mtype_to_scitype
 from aeon.datatypes._series_as_panel import convert_to_scitype
 from aeon.utils.index_functions import update_data
 from aeon.utils.sklearn import (
@@ -58,7 +58,7 @@ from aeon.utils.sklearn import (
     is_sklearn_regressor,
     is_sklearn_transformer,
 )
-from aeon.utils.validation import is_univariate_series
+from aeon.utils.validation import is_univariate_series, validate_input
 from aeon.utils.validation._dependencies import _check_estimator_deps
 
 # single/multiple primitives
@@ -803,29 +803,14 @@ class BaseTransformer(BaseEstimator):
         X_inner_scitype = mtype_to_scitype(X_inner_type, return_unique=True)
         y_inner_scitype = mtype_to_scitype(y_inner_type, return_unique=True)
 
-        ALLOWED_SCITYPES = ["Series", "Panel", "Hierarchical"]
         ALLOWED_MTYPES = self.ALLOWED_INPUT_TYPES
 
-        # checking X
-        X_valid, msg, X_metadata = check_is_scitype(
-            X,
-            scitype=ALLOWED_SCITYPES,
-            return_metadata=True,
-            var_name="X",
-        )
-
-        msg_invalid_input = (
-            f"must be in an aeon compatible format for storing series, hierarchical "
-            f"series or collections of series. For example, a "
-            f"pandas.DataFrame with aeon compatible time indices for a single series, "
-            f"or a 3D numpy shape (n_cases, n_channels, n_timepoints) for a "
-            f"collection. Allowed compatible formats are described as {ALLOWED_MTYPES}."
-        )
-        if not X_valid:
-            for mtype, err in msg.items():
-                msg_invalid_input += f" [{mtype}: {err}] "
-            raise TypeError("X " + msg_invalid_input)
-
+        valid, X_metadata = validate_input(X)
+        if not valid:
+            raise TypeError(
+                "must be in an aeon compatible format for storing series, hierarchical "
+                "series or collections of series."
+            )
         X_scitype = X_metadata["scitype"]
         X_mtype = X_metadata["mtype"]
         # remember these for potential back-conversion (in transform etc)
@@ -833,7 +818,7 @@ class BaseTransformer(BaseEstimator):
         metadata["_X_input_scitype"] = X_scitype
 
         if X_mtype not in ALLOWED_MTYPES:
-            raise TypeError("X " + msg_invalid_input)
+            raise TypeError("X an invalid internal type")
 
         if X_scitype in X_inner_scitype:
             case = "case 1: scitype supported"
@@ -854,23 +839,10 @@ class BaseTransformer(BaseEstimator):
         # end checking X
 
         if y_inner_type != ["None"] and y is not None:
-            if "Table" in y_inner_scitype:
-                y_possible_scitypes = "Table"
-            elif X_scitype == "Series":
-                y_possible_scitypes = "Series"
-            elif X_scitype == "Panel":
-                y_possible_scitypes = "Panel"
-            elif X_scitype == "Hierarchical":
-                y_possible_scitypes = ["Panel", "Hierarchical"]
-
-            y_valid, _, y_metadata = check_is_scitype(
-                y, scitype=y_possible_scitypes, return_metadata=True, var_name="y"
-            )
-            if not y_valid:
-                raise TypeError("y " + msg_invalid_input)
-
+            valid, y_metadata = validate_input(y)
+            if not valid:
+                raise TypeError("Error, y is not a valid type for X type.")
             y_scitype = y_metadata["scitype"]
-
         else:
             # y_scitype is used below - set to None if y is None
             y_scitype = None

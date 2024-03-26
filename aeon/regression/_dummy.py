@@ -48,10 +48,10 @@ class DummyRegressor(BaseRegressor):
     """
 
     _tags = {
-        "X_inner_type": "numpy3D",
         "capability:missing_values": True,
-        "capability:unequal_length": False,
+        "capability:unequal_length": True,
         "capability:multivariate": True,
+        "X_inner_type": ["np-list", "numpy3D"],
     }
 
     def __init__(self, strategy="mean", constant=None, quantile=None):
@@ -68,14 +68,14 @@ class DummyRegressor(BaseRegressor):
 
         Parameters
         ----------
-        X : 3D np.ndarray of shape [n_instances, n_channels, series_length]
-        y : array-like, shape = [n_instances] - the target values
+        X : 3D np.ndarray of shape [n_cases, n_channels, n_timepoints]
+        y : array-like, shape = [n_cases] - the target values
 
         Returns
         -------
         self : reference to self.
         """
-        self.sklearn_dummy_regressor.fit(None, y)
+        self.sklearn_dummy_regressor.fit(X, y)
         return self
 
     def _predict(self, X) -> np.ndarray:
@@ -83,10 +83,10 @@ class DummyRegressor(BaseRegressor):
 
         Parameters
         ----------
-        X : 3D np.ndarray of shape [n_instances, n_channels, series_length]
+        X : 3D np.ndarray of shape [n_cases, n_channels, n_timepoints]
 
         Returns
         -------
         y : predictions of target values for X, np.ndarray
         """
-        return self.sklearn_dummy_regressor.predict(np.zeros(X.shape))
+        return self.sklearn_dummy_regressor.predict(X)
