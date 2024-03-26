@@ -1,0 +1,71 @@
+name: Dependency Cache
+
+on:
+  schedule:
+    # every day at 1:30 AM UTC
+    - cron:  "25 18 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
+
+jobs:
+  create-dependency-cache:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ ubuntu-20.04, macOS-13, windows-2022 ]
+        python-version: [ "3.8", "3.10", "3.12" ]
+
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+
+      - name: Set optimal environment variables
+        uses: ./.github/actions/optimal_ci_env
+        with:
+          runner_os: ${{ runner.os }}
+
+      - name: Setup Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache-name: ${{ runner.os }}-${{ matrix.python-version }}
+          cache: "pip"
+
+      - name: See if cache exists Restore cache
+        id: cache
+        uses: actions/cache/restore@v3
+        with:
+          path: ${{ env.PIP_CACHE_DIR }}
+          key: ${{ runner.os }}-${{ matrix.python-version }}-pip-${{ hashfiles('**/pyproject.toml') }}
+
+      - name: Install aeon and dependencies
+        uses: nick-fields/retry@v3
+        if: steps.cache.outputs.cache-hit != 'true'
+        with:
+          timeout_minutes: 30
+          max_attempts: 3
+          command: python -m pip install .[dev]
+
+      - name: Show dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: python -m pip list
+
+      - name: Save new cache
+        uses: actions/cache/save@v4
+        if: steps.cache.outputs.cache-hit != 'true'
+        with:
+          path: ${{ env.PIP_CACHE_DIR }}
+          key: ${{ runner.os }}-${{ matrix.python-version }}-pip-${{ hashfiles('**/pyproject.toml') }}
+
+      - name: Output what was cached
+        if: steps.cache.outputs.cache-hit == 'true'
+        run: echo "Cache hit for ${{ runner.os }}-${{ matrix.python-version }}-pip-${{ hashfiles('**/pyproject.toml') }}"
+
+      - name: Output what was installed
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: echo "Installed for ${{ runner.os }}-${{ matrix.python-version }}-pip-${{ hashfiles('**/pyproject.toml') }}"

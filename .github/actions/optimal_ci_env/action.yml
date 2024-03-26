@@ -15,13 +15,10 @@ runs:
       shell: cmd
       run: echo C:\Program Files\Git\usr\bin>> $GITHUB_PATH
 
-      # For some reason on windows I/O on the C drive is really slow. To get around this we set the
-      # python, and the cache directories to the D drive which doesn't have slow I/O.
+      # For some reason on windows I/O on the C drive is really slow. To get around this
+      # we set the python, and the cache directories to the D drive which doesn't
+      # have slow I/O.
       # See: https://github.com/actions/runner-images/issues/8755 for more details
-    - name: Set Python cache directory on Windows
-      if: ${{ inputs.runner_os == 'Windows' }}
-      shell: pwsh
-      run: |
     - name: Set Python environment for Windows
       if: ${{ inputs.runner_os == 'Windows' }}
       shell: pwsh
@@ -33,3 +30,13 @@ runs:
         echo "PYTHONUSERBASE=$Env:PYTHONUSERBASE" >> $GITHUB_ENV
         echo "PIP_CACHE_DIR=$Env:PIP_CACHE_DIR" >> $GITHUB_ENV
         echo "PYTHONPYCACHEPREFIX=$Env:PYTHONPYCACHEPREFIX" >> $GITHUB_ENV
+
+    - name: Set Python environment for linux
+      if: ${{ inputs.runner_os == 'Linux' }}
+      run: echo "PIP_CACHE_DIR=~/.cache/pip" >> $GITHUB_ENV
+      shell: bash
+
+    - name: Set Python environment for macos
+      if: ${{ inputs.runner_os == 'macOS' }}
+      run: echo "PIP_CACHE_DIR=~/Library/Caches/pip" >> $GITHUB_ENV
+      shell: bash
