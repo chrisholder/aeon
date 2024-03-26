@@ -5,6 +5,13 @@ inputs:
   runner_os:
     description: "The runner os"
     required: true
+  python_version:
+    description: "The python version"
+    required: true
+  restore_cache:
+    description: "Whether to restore the cache"
+    required: false
+
 
 runs:
   using: "composite"
@@ -40,3 +47,11 @@ runs:
       if: ${{ inputs.runner_os == 'macOS' }}
       run: echo "PIP_CACHE_DIR=~/Library/Caches/pip" >> $GITHUB_ENV
       shell: bash
+
+    # Restore cache if restore_cache is true
+    - name: Restore cache
+      uses: actions/cache/restore@v3
+      if: ${{ inputs.restore_cache == 'true' }}
+      with:
+        path: ${{ env.PIP_CACHE_DIR }}
+        key: ${{ inputs.runner_os }}-${{ inputs.python_version }}-pip-${{ hashfiles('**/pyproject.toml') }}
