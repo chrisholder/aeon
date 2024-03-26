@@ -3,7 +3,7 @@ name: Dependency Cache
 on:
   schedule:
     # every day at 1:30 AM UTC
-    - cron:  "25 18 * * *"
+    - cron:  "27 18 * * *"
   workflow_dispatch:
 
 concurrency:
