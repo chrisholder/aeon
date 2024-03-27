@@ -1,5 +1,5 @@
 # The caches will only be updated if the pyproject.toml file has changed
-name: Periodically create new pip caches
+name: Update pip cache on merge to main
 on:
   push:
     branches:
