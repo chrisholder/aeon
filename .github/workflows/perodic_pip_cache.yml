@@ -3,7 +3,7 @@ name: Periodically create new pip caches
 on:
   schedule:
     # every day at 1:30 AM UTC
-    - cron:  "13 0 * * *"
+    - cron:  "41 0 * * *"
   workflow_dispatch:
 
 concurrency:
@@ -43,6 +43,14 @@ jobs:
           path: ${{ env.PIP_CACHE_DIR }}
           key: ${{ runner.os }}-${{ matrix.python-version }}-pip-${{ hashfiles('**/pyproject.toml') }}
 
+      - name: Install CPU version of pytorch first
+        uses: nick-fields/retry@v3
+        if: steps.cache.outputs.cache-hit != 'true'
+        with:
+          timeout_minutes: 30
+          max_attempts: 3
+          command: python -m pip install torch==2.0.0+cpu -f https://download.pytorch.org/whl/torch_stable.html
+
       # Only install dev dependencies since these are shared between all tests
       - name: Install aeon and dependencies
         uses: nick-fields/retry@v3
@@ -50,7 +58,7 @@ jobs:
         with:
           timeout_minutes: 30
           max_attempts: 3
-          command: python -m pip install .[dl]
+          command: python -m pip install .[all_extras]
 
       - name: Show dependencies
         if: steps.cache.outputs.cache-hit != 'true'
