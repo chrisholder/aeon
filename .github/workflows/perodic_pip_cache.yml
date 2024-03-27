@@ -45,11 +45,11 @@ jobs:
 
       - name: Install CPU version of pytorch first
         uses: nick-fields/retry@v3
-        if: steps.cache.outputs.cache-hit != 'true'
+        if: steps.cache.outputs.cache-hit != 'true' && runner.os == 'ubuntu-20.04'
         with:
           timeout_minutes: 30
           max_attempts: 3
-          command: python -m pip install torch==2.0.0+cpu -f https://download.pytorch.org/whl/torch_stable.html
+          command: python -m pip install torch --index-url https://download.pytorch.org/whl/cpu
 
       # Only install dev dependencies since these are shared between all tests
       - name: Install aeon and dependencies
