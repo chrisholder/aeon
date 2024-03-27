@@ -1,10 +1,9 @@
+# The caches will only be updated if the pyproject.toml file has changed
 name: Periodically create new pip caches
-
 on:
-  schedule:
-    # every day at 1:30 AM UTC
-    - cron:  "00 2 * * *"
-  workflow_dispatch:
+  push:
+    branches:
+      - main
 
 concurrency:
   group: ${{ github.workflow }}
