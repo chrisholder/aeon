@@ -1,5 +1,5 @@
-name: Set optimal env variables
-description: "Sets optimal env variables for CI run"
+name: Sets up optimal pip environment and restores cache
+description: "Sets up optimal pip environment and restores cache"
 
 inputs:
   runner_os:
@@ -35,7 +35,7 @@ runs:
         $Env:PIP_CACHE_DIR = "D:\pip\cache"
         $Env:PYTHONPYCACHEPREFIX = "D:\pycache"
 
-    - name: Set Python environment for Windows in bash
+    - name: Set Python environment for windows
       if: ${{ inputs.runner_os == 'Windows' }}
       shell: bash
       run: |
@@ -53,7 +53,6 @@ runs:
       run: echo "PIP_CACHE_DIR=~/Library/Caches/pip" >> $GITHUB_ENV
       shell: bash
 
-    # Restore cache if restore_cache is true
     - name: Restore cache
       uses: actions/cache/restore@v3
       if: ${{ inputs.restore_cache == 'true' }}
