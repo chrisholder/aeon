@@ -29,7 +29,7 @@ jobs:
         with:
           runner_os: ${{ runner.os }}
           python_version: ${{ matrix.python-version }}
-          restore_cache: false
+          restore_cache: "false"
 
       - name: Setup Python 3.10
         uses: actions/setup-python@v5
@@ -58,7 +58,15 @@ jobs:
         with:
           timeout_minutes: 30
           max_attempts: 3
-          command: python -m pip install .[all_extras]
+          command: python -m pip install .[dev,all_extras]
+
+      - name: Install notebook if on linux 3.10
+        uses: nick-fields/retry@v3
+        if: steps.cache.outputs.cache-hit != 'true' && runner.os == 'Linux' && matrix.python-version == '3.10'
+        with:
+          timeout_minutes: 30
+          max_attempts: 3
+          command: python -m pip install .[dev,all_extras,binder]
 
       - name: Show dependencies
         if: steps.cache.outputs.cache-hit != 'true'
