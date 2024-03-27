@@ -50,22 +50,22 @@ jobs:
           max_attempts: 3
           command: python -m pip install torch --index-url https://download.pytorch.org/whl/cpu
 
-      # Only install dev dependencies since these are shared between all tests
       - name: Install aeon and dependencies
         uses: nick-fields/retry@v3
         if: steps.cache.outputs.cache-hit != 'true'
         with:
           timeout_minutes: 30
           max_attempts: 3
-          command: python -m pip install .[dev,all_extras]
+          command: python -m pip install .[all_extras,dev]
 
+      # Install notebook if on linux 3.10 in addition
       - name: Install notebook if on linux 3.10
         uses: nick-fields/retry@v3
         if: steps.cache.outputs.cache-hit != 'true' && runner.os == 'Linux' && matrix.python-version == '3.10'
         with:
           timeout_minutes: 30
           max_attempts: 3
-          command: python -m pip install .[dev,all_extras,binder]
+          command: python -m pip install .[binder]
 
       - name: Show dependencies
         if: steps.cache.outputs.cache-hit != 'true'
@@ -77,11 +77,3 @@ jobs:
         with:
           path: ${{ env.PIP_CACHE_DIR }}
           key: ${{ runner.os }}-${{ matrix.python-version }}-pip-${{ hashfiles('**/pyproject.toml') }}
-
-      - name: Output what was cached
-        if: steps.cache.outputs.cache-hit == 'true'
-        run: echo "Cache hit for ${{ runner.os }}-${{ matrix.python-version }}-pip-${{ hashfiles('**/pyproject.toml') }}"
-
-      - name: Output what was installed
-        if: steps.cache.outputs.cache-hit != 'true'
-        run: echo "Installed for ${{ runner.os }}-${{ matrix.python-version }}-pip-${{ hashfiles('**/pyproject.toml') }}"
