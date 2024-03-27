@@ -36,7 +36,7 @@ jobs:
           python_version: "3.10"
           restore_cache: "false"
 
-      - name: Use numba cache to set env variables and restore cache
+      - name: Set optimal environment variables but dont restore pip cache
         uses: ./.github/actions/numba_cache
         with:
           cache_name: "test-nosoftdeps"
@@ -73,7 +73,7 @@ jobs:
           python-version: "3.10"
           path: ${{ runner.workspace }}/.venv
 
-      - name: Set optimal environment variables for pip cache and restore
+      - name: Set optimal environment variables but dont restore pip cache
         uses: ./.github/actions/pip_cache
         with:
           runner_os: "Linux"

@@ -1,4 +1,3 @@
-# The caches will only be updated if the pyproject.toml file has changed
 name: Update pip cache on merge to main
 on:
   push:
@@ -35,6 +34,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
+      # The caches will only be updated if the pyproject.toml file has changed
       - name: See if cache exists Restore cache
         id: cache
         uses: actions/cache/restore@v3
