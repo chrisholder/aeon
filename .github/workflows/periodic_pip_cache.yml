@@ -3,7 +3,7 @@ name: Update pip cache every night
 on:
   schedule:
     # every day at 1:30 AM UTC
-    - cron:  "07 17 * * *"
+    - cron:  "09 17 * * *"
 
 concurrency:
   group: ${{ github.workflow }}
