@@ -57,6 +57,13 @@ jobs:
         with:
           python-version: "3.10"
 
+      - name: Set optimal environment variables for pip cache
+        uses: ./.github/actions/pip_cache
+        with:
+          runner_os: ${{ runner.os }}
+          python_version: 3.10
+          restore_cache: "false"
+
       - name: Use numba cache to set env variables but not restore cache
         uses: ./.github/actions/numba_cache
         with:
@@ -82,6 +89,13 @@ jobs:
           path: ${{ github.workspace }}/.numba_cache
           # Save cache with the current date (ENV set in numba_cache action)
           key: numba-run-notebook-examples-${{ runner.os }}-3.10-${{ env.CURRENT_DATE }}
+
+      - name: Save new cache
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ env.PIP_CACHE_DIR }}
+          key: ${{ runner.os }}-3.10-pip-${{ env.CURRENT_DATE }}
+
 
   test-nosoftdeps:
     runs-on: ubuntu-20.04
@@ -159,12 +173,13 @@ jobs:
       - name: Run tests
         run: python -m pytest -k 'not TestAll'
 
-      - name: Save new cache
+      - name: Save new numba cache
         uses: actions/cache/save@v4
         with:
           path: ${{ github.workspace }}/.numba_cache
           # Save cache with the current date (ENV set in numba_cache action)
           key: numba-test-nosoftdeps-full-${{ runner.os }}-3.10-${{ env.CURRENT_DATE }}
+
 
   pytest:
     runs-on: ${{ matrix.os }}
@@ -183,6 +198,13 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
+
+      - name: Set optimal environment variables for pip cache
+        uses: ./.github/actions/pip_cache
+        with:
+          runner_os: ${{ runner.os }}
+          python_version: ${{ matrix.python-version }}
+          restore_cache: "false"
 
       - name: Use numba cache to set env variables but not restore cache
         uses: ./.github/actions/numba_cache
@@ -207,10 +229,22 @@ jobs:
 
       - name: Save new cache
         uses: actions/cache/save@v4
+        # Don't create caches for 3.9 and 3.11 because they aren't used in the main workflow
+        if: ${{ matrix.python-version }} != '3.9' || ${{ matrix.python-version }} != '3.11'
         with:
           path: ${{ github.workspace }}/.numba_cache
           # Save cache with the current date (ENV set in numba_cache action)
           key: numba-pytest-${{ runner.os }}-${{ matrix.python-version}}-${{ env.CURRENT_DATE }}
+
+
+      - name: Save new cache
+        uses: actions/cache/save@v4
+        # Don't create caches for 3.9 and 3.11 because they aren't used in the main workflow.
+        # In addition don't create for Linux 3.10 because the examples workflow creates that cache.
+        if: ${{ matrix.python-version }} != '3.9' || ${{ matrix.python-version }} != '3.11' || (${{ matrix.python-version }} == '3.10' && ${{ runner.os }} == 'Linux')
+        with:
+          path: ${{ env.PIP_CACHE_DIR }}
+          key: ${{ runner.os }}-${{ matrix.python-version }}-pip-${{ env.CURRENT_DATE }}
 
   codecov:
     runs-on: ubuntu-20.04
