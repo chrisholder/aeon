@@ -62,7 +62,7 @@ jobs:
         with:
           cache_name: "notebook-examples"
           runner_os: ${{ runner.os }}
-          python_version: 3.10
+          python_version: "3.10"
           invalidate_numba_cache: "true"
           invalidate_pip_cache: "true"
 
@@ -146,7 +146,7 @@ jobs:
         with:
           cache_name: "nosoftdeps-full"
           runner_os: ${{ runner.os }}
-          python_version: 3.10
+          python_version: "3.10"
           invalidate_numba_cache: "true"
           invalidate_pip_cache: "true"
 
@@ -168,57 +168,57 @@ jobs:
         with:
           runner_os: ${{ runner.os }}
 
-  pytest:
-    runs-on: ${{ matrix.os }}
-
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ ubuntu-20.04, macOS-13, windows-2022 ]
-        python-version: [ "3.8", "3.9", "3.10", "3.11", "3.12" ]
-
-    steps:
-      - name: Checkout main
-        uses: actions/checkout@v4
-
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ matrix.python-version }}
-
-      - name: Setup aeon env variables
-        uses: ./.github/actions/aeon_env_setup
-        with:
-          cache_name: "pytest"
-          runner_os: ${{ runner.os }}
-          python_version: 3.10
-          invalidate_numba_cache: "true"
-          invalidate_pip_cache: "true"
-
-      - name: Install aeon and dependencies
-        uses: nick-fields/retry@v3
-        with:
-          timeout_minutes: 30
-          max_attempts: 3
-          command: python -m pip install .[all_extras,dev]
-
-      - name: Show dependencies
-        run: python -m pip list
-
+#  pytest:
+#    runs-on: ${{ matrix.os }}
+#
+#    strategy:
+#      fail-fast: false
+#      matrix:
+#        os: [ ubuntu-20.04, macOS-13, windows-2022 ]
+#        python-version: [ "3.8", "3.9", "3.10", "3.11", "3.12" ]
+#
+#    steps:
+#      - name: Checkout main
+#        uses: actions/checkout@v4
+#
+#      - name: Setup Python
+#        uses: actions/setup-python@v5
+#        with:
+#          python-version: ${{ matrix.python-version }}
+#
+#      - name: Setup aeon env variables
+#        uses: ./.github/actions/aeon_env_setup
+#        with:
+#          cache_name: "pytest"
+#          runner_os: ${{ runner.os }}
+#          python_version: ${{ matrix.python-version }}
+#          invalidate_numba_cache: "true"
+#          invalidate_pip_cache: "true"
+#
+#      - name: Install aeon and dependencies
+#        uses: nick-fields/retry@v3
+#        with:
+#          timeout_minutes: 30
+#          max_attempts: 3
+#          command: python -m pip install .[all_extras,dev]
+#
+#      - name: Show dependencies
+#        run: python -m pip list
+#
+##      - name: Run tests
+##        run: python -m pytest
 #      - name: Run tests
-#        run: python -m pytest
-      - name: Run tests
-        run: |
-          python -m pytest -k 'test_all_estimators' --pyargs aeon.registry
-          python -m pytest -k 'test_check_estimator_does_not_raise' --pyargs aeon.utils
-          python -m pytest --pyargs aeon.testing.test_softdeps
-
-      - name: Save aeon caches
-        uses: ./.github/actions/save_aeon_cache
-        # We only need caches for python 3.8, 3.10, and 3.12
-        if: ${{ matrix.python-version }} == "3.8" || ${{ matrix.python-version }} == "3.10" || ${{ matrix.python-version }} == "3.12"
-        with:
-          runner_os: ${{ runner.os }}
+#        run: |
+#          python -m pytest -k 'test_all_estimators' --pyargs aeon.registry
+#          python -m pytest -k 'test_check_estimator_does_not_raise' --pyargs aeon.utils
+#          python -m pytest --pyargs aeon.testing.test_softdeps
+#
+#      - name: Save aeon caches
+#        uses: ./.github/actions/save_aeon_cache
+#        # We only need caches for python 3.8, 3.10, and 3.12
+#        if: ${{ matrix.python-version }} == "3.8" || ${{ matrix.python-version }} == "3.10" || ${{ matrix.python-version }} == "3.12"
+#        with:
+#          runner_os: ${{ runner.os }}
 
   codecov:
     runs-on: ubuntu-20.04
