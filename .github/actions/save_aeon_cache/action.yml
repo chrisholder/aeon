@@ -40,14 +40,17 @@ runs:
 
     # If on linux remove pytorch and reinstall with CPU version to reduce size
     - name: Remove GPU version of torch and install CPU version on linux
-      uses: nick-fields/retry@v3
-      if: ${{ inputs.runner_os }} == 'Linux' && ${{ env.INVALIDATE_PIP_CACHE == '1' }} && github.ref == 'refs/heads/main'
-      with:
-        timeout_minutes: 30
-        max_attempts: 3
-        command: |
-          python -m pip uninstall torch
+      run: |
+        if python -m pip list | grep -q torch; then
+          echo "Torch is installed, uninstalling..."
+          python -m pip uninstall torch -y
+          echo "Reinstalling torch from specified index URL..."
           python -m pip install torch --index-url https://download.pytorch.org/whl/cpu
+        else
+          echo "Torch is not installed, installing..."
+        fi
+      shell: bash
+
 
     # Only save the pip cache on main branch
     - name: Save new pip cache
