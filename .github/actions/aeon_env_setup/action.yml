@@ -23,6 +23,10 @@ inputs:
 runs:
   using: "composite"
   steps:
+    - name: Set github token
+      run: echo "GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}" >> $GITHUB_ENV
+      shell: bash
+
     # ============================= Numba Cache =============================
     - name: Set numba environment variables
       run: |
