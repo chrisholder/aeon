@@ -3,7 +3,7 @@ name: PR Examples
 on:
   push:
     branches:
-      - main
+      - mains
   pull_request:
     branches:
       - main

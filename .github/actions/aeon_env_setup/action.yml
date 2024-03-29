@@ -4,8 +4,7 @@ description: "Sets up the env variables for aeon actions"
 inputs:
   cache_name:
     description: "The name of the cache"
-    required: false
-    default: ""
+    required: true
   runner_os:
     description: "The runner os"
     required: true
@@ -64,7 +63,7 @@ runs:
       shell: bash
 
     - name: Shared environment variables
-      run: echo "PIP_CACHE_NAME=${{ inputs.runner_os }}-${{ inputs.python_version }}-pip-${{ input.cache_name }}" >> $GITHUB_ENV
+      run: echo "PIP_CACHE_NAME=${{ inputs.runner_os }}-${{ inputs.python_version }}-pip-${{ inputs.cache_name }}" >> $GITHUB_ENV
       shell: bash
 
     # Check tags to see if we should invalidate the cache

@@ -21,9 +21,8 @@ runs:
 
 
     - name: Save new numba cache
-      if: ${{ env.INVALIDATE_NUMBA_CACHE == '1' }}
-      run: |
       uses: actions/cache/save@v4
+      if: ${{ env.INVALIDATE_NUMBA_CACHE == '1' }} && && github.ref == 'refs/heads/main'
       with:
         path: ${{ env.NUMBA_CACHE_DIR }}
         key: ${{ env.NUMBA_CACHE_NAME }}
@@ -53,7 +52,7 @@ runs:
     # Only save the pip cache on main branch
     - name: Save new pip cache
       uses: actions/cache/save@v4
-      if: ${{ env.INVALIDATE_NUMBA_CACHE == '1' }}
+      if: ${{ env.INVALIDATE_NUMBA_CACHE == '1' }} && github.ref == 'refs/heads/main'
       with:
         path: ${{ env.PIP_CACHE_DIR }}
         key: ${{ env.PIP_CACHE_NAME }}

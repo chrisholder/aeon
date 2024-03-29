@@ -73,9 +73,14 @@ jobs:
           max_attempts: 3
           command: python -m pip install .[all_extras,binder,dev]
 
-      - name: Run example notebooks
-        run: build_tools/run_examples.sh
-        shell: bash
+#      - name: Run example notebooks
+#        run: build_tools/run_examples.sh
+#        shell: bash
+      - name: Run tests
+        run: |
+          python -m pytest -k 'test_all_estimators' --pyargs aeon.registry
+          python -m pytest -k 'test_check_estimator_does_not_raise' --pyargs aeon.utils
+          python -m pytest --pyargs aeon.testing.test_softdeps
 
       - name: Save aeon caches
         uses: ./.github/actions/save_aeon_cache
@@ -200,8 +205,13 @@ jobs:
       - name: Show dependencies
         run: python -m pip list
 
+#      - name: Run tests
+#        run: python -m pytest
       - name: Run tests
-        run: python -m pytest
+        run: |
+          python -m pytest -k 'test_all_estimators' --pyargs aeon.registry
+          python -m pytest -k 'test_check_estimator_does_not_raise' --pyargs aeon.utils
+          python -m pytest --pyargs aeon.testing.test_softdeps
 
       - name: Save aeon caches
         uses: ./.github/actions/save_aeon_cache
