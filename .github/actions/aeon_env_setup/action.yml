@@ -24,7 +24,7 @@ runs:
   using: "composite"
   steps:
     - name: Set github token
-      run: echo "GH_TOKEN=${{ secrets.GITHUB_TOK }}" >> $GITHUB_ENV
+      run: echo "GH_TOKEN=${{ github.GITHUB_TOKEN }}" >> $GITHUB_ENV
       shell: bash
 
     # ============================= Numba Cache =============================
