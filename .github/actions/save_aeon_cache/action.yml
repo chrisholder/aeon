@@ -1,0 +1,61 @@
+name: Aeon cache save
+description: "Saves the numba and pip cache"
+
+inputs:
+  runner_os:
+    description: "The runner os"
+    required: true
+
+# Action assumes aeon_env_setup has been run
+runs:
+  using: "composite"
+  steps:
+    # ============================= Numba Cache =============================
+    - name: Check and delete numba cache if it exists
+      if: ${{ env.INVALIDATE_NUMBA_CACHE == '1' }}
+      run: |
+        if gh cache list --key ${{ env.NUMBA_CACHE_NAME }} | grep -q ${{ env.NUMBA_CACHE_NAME }}; then
+          gh cache delete ${{ env.NUMBA_CACHE_NAME }}
+        fi
+      shell: bash
+
+
+    - name: Save new numba cache
+      if: ${{ env.INVALIDATE_NUMBA_CACHE == '1' }}
+      run: |
+      uses: actions/cache/save@v4
+      with:
+        path: ${{ env.NUMBA_CACHE_DIR }}
+        key: ${{ env.NUMBA_CACHE_NAME }}
+
+    # ============================= Numba Cache =============================
+
+    # ============================== Pip Cache ==============================
+    - name: Check and delete numba cache if it exists
+      if: ${{ env.INVALIDATE_NUMBA_CACHE == '1' }}
+      run: |
+        if gh cache list --key ${{ env.PIP_CACHE_NAME }} | grep -q ${{ env.PIP_CACHE_NAME }}; then
+          gh cache delete ${{ env.PIP_CACHE_NAME }}
+        fi
+      shell: bash
+
+    # If on linux remove pytorch and reinstall with CPU version to reduce size
+    - name: Remove GPU version of torch and install CPU version on linux
+      uses: nick-fields/retry@v3
+      if: ${{ inputs.runner_os }} == 'Linux' && ${{ env.INVALIDATE_PIP_CACHE == '1' }}
+      with:
+        timeout_minutes: 30
+        max_attempts: 3
+        command: |
+          python -m pip uninstall torch
+          python -m pip install torch --index-url https://download.pytorch.org/whl/cpu
+
+    # Only save the pip cache on main branch
+    - name: Save new pip cache
+      uses: actions/cache/save@v4
+      if: ${{ env.INVALIDATE_NUMBA_CACHE == '1' }}
+      with:
+        path: ${{ env.PIP_CACHE_DIR }}
+        key: ${{ env.PIP_CACHE_NAME }}
+
+    # ============================== Pip Cache ==============================

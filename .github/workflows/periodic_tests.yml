@@ -57,20 +57,14 @@ jobs:
         with:
           python-version: "3.10"
 
-      - name: Set optimal environment variables for pip cache
-        uses: ./.github/actions/pip_cache
+      - name: Setup aeon env variables
+        uses: ./.github/actions/aeon_env_setup
         with:
+          cache_name: "notebook-examples"
           runner_os: ${{ runner.os }}
           python_version: 3.10
-          restore_cache: "false"
-
-      - name: Use numba cache to set env variables but not restore cache
-        uses: ./.github/actions/numba_cache
-        with:
-          cache_name: "run-notebook-examples"
-          runner_os: ${{ runner.os }}
-          python_version: "3.10"
-          restore_cache: "false"
+          invalidate_numba_cache: "true"
+          invalidate_pip_cache: "true"
 
       - name: Install dependencies
         uses: nick-fields/retry@v3
@@ -83,19 +77,10 @@ jobs:
         run: build_tools/run_examples.sh
         shell: bash
 
-      - name: Save new cache
-        uses: actions/cache/save@v4
+      - name: Save aeon caches
+        uses: ./.github/actions/save_aeon_cache
         with:
-          path: ${{ github.workspace }}/.numba_cache
-          # Save cache with the current date (ENV set in numba_cache action)
-          key: numba-run-notebook-examples-${{ runner.os }}-3.10-${{ env.CURRENT_DATE }}
-
-      - name: Save new cache
-        uses: actions/cache/save@v4
-        with:
-          path: ${{ env.PIP_CACHE_DIR }}
-          key: ${{ runner.os }}-3.10-pip-${{ env.CURRENT_DATE }}
-
+          runner_os: ${{ runner.os }}
 
   test-nosoftdeps:
     runs-on: ubuntu-20.04
@@ -109,13 +94,14 @@ jobs:
         with:
           python-version: "3.10"
 
-      - name: Use numba cache to set env variables but not restore cache
-        uses: ./.github/actions/numba_cache
+      - name: Setup aeon env variables
+        uses: ./.github/actions/aeon_env_setup
         with:
-          cache_name: "test-nosoftdeps"
+          cache_name: "nosoftdeps"
           runner_os: ${{ runner.os }}
-          python_version: "3.10"
-          restore_cache: "false"
+          python_version: 3.10
+          invalidate_numba_cache: "true"
+          invalidate_pip_cache: "true"
 
       - name: Install aeon and dependencies
         uses: nick-fields/retry@v3
@@ -133,12 +119,10 @@ jobs:
           python -m pytest -k 'test_check_estimator_does_not_raise' --pyargs aeon.utils
           python -m pytest --pyargs aeon.testing.test_softdeps
 
-      - name: Save new cache
-        uses: actions/cache/save@v4
+      - name: Save aeon caches
+        uses: ./.github/actions/save_aeon_cache
         with:
-          path: ${{ github.workspace }}/.numba_cache
-          # Save cache with the current date (ENV set in numba_cache action)
-          key: numba-test-nosoftdeps-${{ runner.os }}-3.10-${{ env.CURRENT_DATE }}
+          runner_os: ${{ runner.os }}
 
   test-nosoftdeps-full:
     runs-on: ubuntu-20.04
@@ -152,13 +136,14 @@ jobs:
         with:
           python-version: "3.10"
 
-      - name: Use numba cache to set env variables but not restore cache
-        uses: ./.github/actions/numba_cache
+      - name: Setup aeon env variables
+        uses: ./.github/actions/aeon_env_setup
         with:
-          cache_name: "test-nosoftdeps-full"
+          cache_name: "nosoftdeps-full"
           runner_os: ${{ runner.os }}
-          python_version: "3.10"
-          restore_cache: "false"
+          python_version: 3.10
+          invalidate_numba_cache: "true"
+          invalidate_pip_cache: "true"
 
       - name: Install aeon and dependencies
         uses: nick-fields/retry@v3
@@ -173,13 +158,10 @@ jobs:
       - name: Run tests
         run: python -m pytest -k 'not TestAll'
 
-      - name: Save new numba cache
-        uses: actions/cache/save@v4
+      - name: Save aeon caches
+        uses: ./.github/actions/save_aeon_cache
         with:
-          path: ${{ github.workspace }}/.numba_cache
-          # Save cache with the current date (ENV set in numba_cache action)
-          key: numba-test-nosoftdeps-full-${{ runner.os }}-3.10-${{ env.CURRENT_DATE }}
-
+          runner_os: ${{ runner.os }}
 
   pytest:
     runs-on: ${{ matrix.os }}
@@ -199,20 +181,14 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Set optimal environment variables for pip cache
-        uses: ./.github/actions/pip_cache
-        with:
-          runner_os: ${{ runner.os }}
-          python_version: ${{ matrix.python-version }}
-          restore_cache: "false"
-
-      - name: Use numba cache to set env variables but not restore cache
-        uses: ./.github/actions/numba_cache
+      - name: Setup aeon env variables
+        uses: ./.github/actions/aeon_env_setup
         with:
           cache_name: "pytest"
           runner_os: ${{ runner.os }}
-          python_version: ${{ matrix.python-version }}
-          restore_cache: "false"
+          python_version: 3.10
+          invalidate_numba_cache: "true"
+          invalidate_pip_cache: "true"
 
       - name: Install aeon and dependencies
         uses: nick-fields/retry@v3
@@ -227,24 +203,12 @@ jobs:
       - name: Run tests
         run: python -m pytest
 
-      - name: Save new cache
-        uses: actions/cache/save@v4
-        # Don't create caches for 3.9 and 3.11 because they aren't used in the main workflow
-        if: ${{ matrix.python-version }} != '3.9' || ${{ matrix.python-version }} != '3.11'
+      - name: Save aeon caches
+        uses: ./.github/actions/save_aeon_cache
+        # We only need caches for python 3.8, 3.10, and 3.12
+        if: ${{ matrix.python-version }} == "3.8" || ${{ matrix.python-version }} == "3.10" || ${{ matrix.python-version }} == "3.12"
         with:
-          path: ${{ github.workspace }}/.numba_cache
-          # Save cache with the current date (ENV set in numba_cache action)
-          key: numba-pytest-${{ runner.os }}-${{ matrix.python-version}}-${{ env.CURRENT_DATE }}
-
-
-      - name: Save new cache
-        uses: actions/cache/save@v4
-        # Don't create caches for 3.9 and 3.11 because they aren't used in the main workflow.
-        # In addition don't create for Linux 3.10 because the examples workflow creates that cache.
-        if: ${{ matrix.python-version }} != '3.9' || ${{ matrix.python-version }} != '3.11' || (${{ matrix.python-version }} == '3.10' && ${{ runner.os }} == 'Linux')
-        with:
-          path: ${{ env.PIP_CACHE_DIR }}
-          key: ${{ runner.os }}-${{ matrix.python-version }}-pip-${{ env.CURRENT_DATE }}
+          runner_os: ${{ runner.os }}
 
   codecov:
     runs-on: ubuntu-20.04
@@ -260,14 +224,6 @@ jobs:
 
       - name: Disable Numba JIT
         run: echo "NUMBA_DISABLE_JIT=1" >> $GITHUB_ENV
-
-      - name: Install CPU version of pytorch on linux
-        uses: nick-fields/retry@v3
-        if: steps.cache.outputs.cache-hit != 'true' && runner.os == 'Linux'
-        with:
-          timeout_minutes: 30
-          max_attempts: 3
-          command: python -m pip install torch --index-url https://download.pytorch.org/whl/cpu
 
       - name: Install aeon and dependencies
         uses: nick-fields/retry@v3

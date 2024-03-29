@@ -1,0 +1,34 @@
+name: Restore aeon cache setup
+description: "Setup workflow for caching"
+
+inputs:
+  runner_os:
+    description: "The runner os"
+    required: true
+  python_version:
+    description: "The python version"
+    required: true
+
+# Action assumes aeon_env_setup has been run
+runs:
+  using: "composite"
+  steps:
+    # ============================= Numba Cache =============================
+    - name: Restore cache
+      uses: actions/cache/restore@v3
+      if: ${{ env.INVALIDATE_NUMBA_CACHE != '1' }}
+      with:
+        path: ${{ env.NUMBA_CACHE_DIR }}
+        key: ${{ env.NUMBA_CACHE_NAME }}
+
+    # ============================= Numba Cache =============================
+
+    # ============================== Pip Cache ==============================
+    - name: Restore cache
+      uses: actions/cache/restore@v3
+      if: ${{ env.INVALIDATE_PIP_CACHE != '1' }}
+      with:
+        path: ${{ env.PIP_CACHE_DIR }}
+        key: ${{ env.PIP_CACHE_NAME }}
+
+    # ============================== Pip Cache ==============================
