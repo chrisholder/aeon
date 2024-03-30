@@ -89,12 +89,10 @@ runs:
       run: echo "true"
       shell: bash
 
-    - name: Check and delete pip cache if it exists
+    - name: Delete pip cache
+      id: pip_cache_exists
       if: ${{ steps.pip_save_cache.outputs.run == 'true' }}
-      run: |
-        if gh cache list --key ${{ env.PIP_CACHE_NAME }} | grep -q ${{ env.PIP_CACHE_NAME }}; then
-          gh cache delete ${{ env.PIP_CACHE_NAME }}
-        fi
+      run: gh cache delete ${{ env.PIP_CACHE_NAME }}
       shell: bash
 
     # If on linux with python 3.8, 3.10 or 3.12 installing all extras install cpu pytorch
