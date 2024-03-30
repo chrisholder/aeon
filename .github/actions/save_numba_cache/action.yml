@@ -24,7 +24,6 @@ runs:
         fi
       shell: bash
 
-
     - name: Save new numba cache
       uses: actions/cache/save@v4
       if: ${{ steps.numba_save.outputs.run == 'true' }}

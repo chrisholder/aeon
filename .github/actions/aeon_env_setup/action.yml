@@ -30,6 +30,14 @@ runs:
       uses: actions/setup-python@v5
       with:
         python-version: ${{ inputs.python_version }}
+
+    # Check if we're on a version of python to perform the caching
+    - name: Cache version of python
+      id: correct_python_version_to_cache
+      if: (python_version == '3.12' || python_version == '3.10' || python_version == '3.8')
+      run: echo "true"
+      shell: bash
+
     # ============================= Numba Cache =============================
     - name: Set numba environment variables
       run: |
@@ -43,7 +51,7 @@ runs:
 
     # Check tags to see if we should invalidate the cache
     - name: Check tags to see if we should invalidate the cache
-      if: contains( github.event.pull_request.labels.*.name, 'invalidate_numba_cache') || contains( github.event.pull_request.labels.*.name, 'invalidate_cache') || ${{ inputs.invalidate_numba_cache == 'true' }}
+      if: ${{ steps.correct_python_version_to_cache.outputs.run == 'true' }} && (contains( github.event.pull_request.labels.*.name, 'invalidate_numba_cache') || contains( github.event.pull_request.labels.*.name, 'invalidate_cache') || ${{ inputs.invalidate_numba_cache == 'true' }})
       run: echo "INVALIDATE_NUMBA_CACHE=1" >> $GITHUB_ENV
       shell: bash
     # ============================= Numba Cache =============================
@@ -73,11 +81,11 @@ runs:
       run: echo "PIP_CACHE_NAME=${{ inputs.runner_os }}-${{ inputs.python_version }}-pip-${{ inputs.cache_name }}" >> $GITHUB_ENV
       shell: bash
 
-    # Check tags to see if we should invalidate the cache, or if specified to invalidate
-    # and on the main branch
+    # Check tags to see if cache version of python (3.8, 3.10, 3.12) and if there is a label to invalidate the cache
+    # or if the input is set to invalidate the cache
     - name: Check tags to see if we should invalidate the cache
       id: pip_save_cache
-      if: contains( github.event.pull_request.labels.*.name, 'invalidate_pip_cache') || contains( github.event.pull_request.labels.*.name, 'invalidate_cache') || ${{ inputs.invalidate_pip_cache == 'true' }}
+      if: ${{ steps.correct_python_version_to_cache.outputs.run == 'true' }} && (contains( github.event.pull_request.labels.*.name, 'invalidate_pip_cache') || contains( github.event.pull_request.labels.*.name, 'invalidate_cache') || ${{ inputs.invalidate_pip_cache == 'true' }})
       run: echo "true"
       shell: bash
 
@@ -92,7 +100,7 @@ runs:
     # If on linux with python 3.8, 3.10 or 3.12 installing all extras install cpu pytorch
     - name: On linux install cpu pytorch
       uses: nick-fields/retry@v3
-      if: ${{ steps.pip_save_cache.outputs.run == 'true' }} && contains(inputs.pip_install, 'all_extras') && runner.os == 'Linux' && (python_version == '3.12' || python_version == '3.10' || python_version == '3.8')
+      if: ${{ steps.pip_save_cache.outputs.run == 'true' }} && contains(inputs.pip_install, 'all_extras') && runner.os == 'Linux'
       with:
         timeout_minutes: 30
         max_attempts: 3
