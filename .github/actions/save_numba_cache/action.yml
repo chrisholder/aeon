@@ -13,7 +13,7 @@ runs:
     - name: Run numba save
       id: numba_save
       if: ${{ env.INVALIDATE_NUMBA_CACHE == '1' }} && github.ref == 'refs/heads/main'
-      run: echo "true"
+      run: echo "::set-output name=run::true"
       shell: bash
 
     - name: Check and delete numba cache if it exists
