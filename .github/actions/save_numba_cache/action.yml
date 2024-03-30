@@ -1,0 +1,33 @@
+name: Aeon numba cache save
+description: "Saves the numba cache"
+
+inputs:
+  runner_os:
+    description: "The runner os"
+    required: true
+
+# Action assumes aeon_env_setup has been run
+runs:
+  using: "composite"
+  steps:
+    - name: Run numba save
+      id: numba_save
+      if: ${{ env.INVALIDATE_NUMBA_CACHE == '1' }} && github.ref == 'refs/heads/main'
+      run: echo "true"
+      shell: bash
+
+    - name: Check and delete numba cache if it exists
+      if: ${{ steps.numba_save.outputs.run == 'true' }}
+      run: |
+        if gh cache list --key ${{ env.NUMBA_CACHE_NAME }} | grep -q ${{ env.NUMBA_CACHE_NAME }}; then
+          gh cache delete ${{ env.NUMBA_CACHE_NAME }}
+        fi
+      shell: bash
+
+
+    - name: Save new numba cache
+      uses: actions/cache/save@v4
+      if: ${{ steps.numba_save.outputs.run == 'true' }}
+      with:
+        path: ${{ env.NUMBA_CACHE_DIR }}
+        key: ${{ env.NUMBA_CACHE_NAME }}

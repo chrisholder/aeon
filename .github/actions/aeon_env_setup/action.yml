@@ -19,14 +19,17 @@ inputs:
     description: "Invalidate the pip cache"
     required: false
     default: "false"
+  command:
+    description: "The command to run"
+    required: true
 
 runs:
   using: "composite"
   steps:
-    - name: Set github token
-      run: echo "GH_TOKEN=${{ github.GITHUB_TOKEN }}" >> $GITHUB_ENV
-      shell: bash
-
+    - name: Setup Python 3.10
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ inputs.python_version }}
     # ============================= Numba Cache =============================
     - name: Set numba environment variables
       run: |
@@ -70,9 +73,43 @@ runs:
       run: echo "PIP_CACHE_NAME=${{ inputs.runner_os }}-${{ inputs.python_version }}-pip-${{ inputs.cache_name }}" >> $GITHUB_ENV
       shell: bash
 
-    # Check tags to see if we should invalidate the cache
+    # Check tags to see if we should invalidate the cache, or if specified to invalidate
+    # and on the main branch
     - name: Check tags to see if we should invalidate the cache
+      id: pip_save_cache
       if: contains( github.event.pull_request.labels.*.name, 'invalidate_pip_cache') || contains( github.event.pull_request.labels.*.name, 'invalidate_cache') || ${{ inputs.invalidate_pip_cache == 'true' }}
-      run: echo "INVALIDATE_PIP_CACHE=1" >> $GITHUB_ENV
+      run: echo "true"
       shell: bash
+
+    - name: Check and delete pip cache if it exists
+      if: ${{ steps.pip_save_cache.outputs.run == 'true' }}
+      run: |
+        if gh cache list --key ${{ env.PIP_CACHE_NAME }} | grep -q ${{ env.PIP_CACHE_NAME }}; then
+          gh cache delete ${{ env.PIP_CACHE_NAME }}
+        fi
+      shell: bash
+
+    # If on linux with python 3.8, 3.10 or 3.12 installing all extras install cpu pytorch
+    - name: On linux install cpu pytorch
+      uses: nick-fields/retry@v3
+      if: ${{ steps.pip_save_cache.outputs.run == 'true' }} && contains(inputs.pip_install, 'all_extras') && runner.os == 'Linux' && (python_version == '3.12' || python_version == '3.10' || python_version == '3.8')
+      with:
+        timeout_minutes: 30
+        max_attempts: 3
+        command: python -m pip install torch --index-url https://download.pytorch.org/whl/cpu
+
+    - name: Install aeon and dependencies
+      uses: nick-fields/retry@v3
+      with:
+        timeout_minutes: 30
+        max_attempts: 3
+        command: ${{ inputs.command }}
+
+    # Save cache
+    - name: Save new pip cache
+      uses: actions/cache/save@v4
+      if: ${{ steps.pip_save_cache.outputs.run == 'true' }} && github.ref == 'refs/heads/main'
+      with:
+        path: ${{ env.PIP_CACHE_DIR }}
+        key: ${{ env.PIP_CACHE_NAME }}
     # ============================== Pip Cache ==============================
