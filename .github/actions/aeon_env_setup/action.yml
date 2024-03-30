@@ -35,7 +35,7 @@ runs:
     - name: Cache version of python
       id: correct_python_version_to_cache
       if: (${{ inputs.python_version }} == '3.12' || ${{ inputs.python_version }} == '3.10' || ${{ inputs.python_version }} == '3.8')
-      run: echo "::set-output name=run::true"
+      run: echo "true" >> $GITHUB_OUTPUT
       shell: bash
 
     # ============================= Numba Cache =============================
@@ -86,11 +86,11 @@ runs:
     - name: Check tags to see if we should invalidate the cache
       id: pip_save_cache
       if: ${{ steps.correct_python_version_to_cache.outputs.run == 'true' }} && (contains( github.event.pull_request.labels.*.name, 'invalidate_pip_cache') || contains( github.event.pull_request.labels.*.name, 'invalidate_cache') || ${{ inputs.invalidate_pip_cache == 'true' }})
-      run: echo "::set-output name=run::true"
+      run: echo "true" >> $GITHUB_OUTPUT
       shell: bash
 
     - name: Check working
-      run: gh cache list --key
+      run: gh cache list
       shell: bash
 
     - name: Check working
